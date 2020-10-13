@@ -5,13 +5,15 @@ c 语言 json对象 struct 描述 格式化
 目前只支持json-c
 
 #### 使用说明 #############
-需要定义  struct address 描述数据，  
+需要定义  struct address 描述数据，
+
+#########
 struct address 
 { 
     char *city; 
     char *country; 
 }; 
-#########
+
 struct json_desction address_desc[] = { 
     { "city",         json_type_string,    			0,                             offsetof(struct address, city),                 NULL},  
     { "country",      json_type_string,    			0,                             offsetof(struct address, country),              NULL}, 
