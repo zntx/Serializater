@@ -20,11 +20,12 @@ struct address
 
 
 struct json_desction address_desc[] = { 
-    { "city",         json_type_string,    			0,                             offsetof(struct address, city),                 NULL},  
+
+    { "city",         json_type_string,    	0,   offsetof(struct address, city),                 NULL},  
     
-    { "country",      json_type_string,    			0,                             offsetof(struct address, country),              NULL}, 
+    { "country",      json_type_string,     0,   offsetof(struct address, country),              NULL}, 
     
-    { NULL,           json_type_null,      			0,                             0,                                              NULL} 
+    { NULL,           json_type_null,      	0,    0,                                              NULL} 
     
 };
 
