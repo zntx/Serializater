@@ -19,7 +19,18 @@ bool Seriali_Default(void *address, const StructDesc *first)
         {
         case Seriali_Char:
 
-            printf(" %c \n", *(char *)(address + des->offset));
+            for (int i = 0; i < des->model.width; i++)
+            {
+                if (des->model.is_ptr)
+                {
+                    (*(char **)((address + des->offset) + i * sizeof(char *))) = malloc(sizeof(char));
+                    *(*(char **)((address + des->offset) + i * sizeof(char *))) = '0';
+                }
+                else
+                {
+                    *((char *)(address + des->offset) + i) = '0';
+                }
+            }
             break;
 
         case Seriali_Bool:
@@ -118,7 +129,7 @@ bool Seriali_Default(void *address, const StructDesc *first)
     return true;
 }
 
-int Seriali_Print(void *address, const StructDesc *des, int deep)
+SERIALIZATER_PUBLIC(int) Seriali_Print(void *address, const StructDesc *des, int deep)
 {
     void *data_child = NULL;
     int i = 0;
@@ -130,8 +141,16 @@ int Seriali_Print(void *address, const StructDesc *des, int deep)
         switch (des->model.type)
         {
         case Seriali_Char:
+            printf(" [ ");
+            for (int i = 0; i < des->model.width; i++)
+            {
+                if (des->model.is_ptr)
+                    printf(" %c, ", *(*(char **)((address + des->offset) + i * sizeof(char *))));
+                else
+                    printf(" %c, ", *((char *)(address + des->offset) + i) );
+            }
+            printf("]\n");
 
-            printf(" %c \n", *(char *)(address + des->offset));
             break;
         case Seriali_Bool:
             printf(" [ ");
@@ -425,7 +444,41 @@ bool Seriali_from_json(void *address, const StructDesc *first, const cJSON *root
         {
         case Seriali_Char:
 
-            printf(" %c \n", *(char *)(address + des->offset));
+            if (des->model.width > 1)
+            {
+                for (int i = 0; i < des->model.width; i++)
+                {
+                    array_item = cJSON_GetArrayItem(item, i);
+                    if (item == NULL)
+                    {
+                        return false;
+                    }
+
+                    if (des->model.is_ptr)
+                    {
+                        (*(char **)((address + des->offset) + i * sizeof(char *))) = malloc(sizeof(char));
+                        *(*(char **)((address + des->offset) + i * sizeof(char *))) = array_item->valueint;
+                    }
+                    else
+                    {
+                        *((char *)(address + des->offset) + i) = array_item->valueint;
+                    }
+                }
+            }
+            else
+            {
+                if (des->model.is_ptr)
+                {
+                    (*(char **)((address + des->offset) + 0 * sizeof(char *))) = malloc(sizeof(char));
+                    *(*(char **)((address + des->offset) + 0 * sizeof(char *))) = item->valueint;
+                }
+                else
+                {
+                    *((char *)(address + des->offset) + 0) = item->valueint;
+                }
+            }
+
+
             break;
         case Seriali_Bool:
             if (des->model.width > 1)
@@ -662,7 +715,7 @@ bool Seriali_from_json(void *address, const StructDesc *first, const cJSON *root
 
 /*
 */
-bool Seriali_Decode(void* address, const StructDesc *des, const char* json)
+SERIALIZATER_PUBLIC(bool) Seriali_Decode(void* address, const StructDesc *des, const char* json)
 {
     if( json == NULL)
     {
@@ -679,7 +732,7 @@ bool Seriali_Decode(void* address, const StructDesc *des, const char* json)
 }
 
 
-char* Seriali_Encode(void* address, const StructDesc *des )
+SERIALIZATER_PUBLIC(char*) Seriali_Encode(void* address, const StructDesc *des )
 {
     cJSON *root = Seriali_to_json(address , des);
     if( root == NULL)
